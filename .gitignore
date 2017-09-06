@@ -46,19 +46,19 @@ Network Trash Folder
 Temporary Items
 .apdisk
 *.exe
-Debug/OpenVRTest.exe
 *.opendb
 *.VC.db
 *.db
 *.tlog
 *.log
 *.ilk
-OpenVRTest/Debug/*.obj
-OpenVRTest/Release/*.obj
-OpenVRTest/untrackedmodels
+VRRocketSuit/Debug/*.obj
+VRRocketSuit/Release/*.obj
+VRRocketSuit/untrackedmodels
 *.pdb
 *.suo
-OpenVRTest/Debug/vrwindow.obj.enc
+VRRocketSuit/Debug/vrwindow.obj.enc
 *.idb
-OpenVRTest/Debug/vc140.pdb
+VRRocketSuit/Debug/vc140.pdb
 *.ipdb
+*
