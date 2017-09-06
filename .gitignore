@@ -55,10 +55,11 @@ Temporary Items
 VRRocketSuit/Debug/*.obj
 VRRocketSuit/Release/*.obj
 VRRocketSuit/untrackedmodels
+VRRocketSuit/x64/Release/*.obj
+VRRocketSuit/x64/Debug/*.obj
 *.pdb
 *.suo
 VRRocketSuit/Debug/vrwindow.obj.enc
 *.idb
 VRRocketSuit/Debug/vc140.pdb
 *.ipdb
-*

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="VRCamera.cpp" />
+    <ClCompile Include="VRController.cpp" />
+    <ClCompile Include="VRTools.cpp" />
+    <ClCompile Include="VRWindow.cpp" />
+    <ClCompile Include="VRRocketSuit.cpp" />
+    <ClCompile Include="HeatParticleGeometry.cpp">
+      <Filter>HeatParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="HeatParticleMat.cpp">
+      <Filter>HeatParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="HeatParticleShader.cpp">
+      <Filter>HeatParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="HeatParticleSystem.cpp">
+      <Filter>HeatParticleSystem</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="VRController.h" />
+    <ClInclude Include="VRTools.h" />
+    <ClInclude Include="VRCamera.h" />
+    <ClInclude Include="VRWindow.h" />
+    <ClInclude Include="HeatParticleGeometry.h">
+      <Filter>HeatParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="HeatParticleMat.h">
+      <Filter>HeatParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="HeatParticleShader.h">
+      <Filter>HeatParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="HeatParticleSystem.h">
+      <Filter>HeatParticleSystem</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="HeatParticleSystem">
+      <UniqueIdentifier>{afba4739-d635-4fc7-b9fd-82749efd72ba}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
