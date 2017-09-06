@@ -21,6 +21,12 @@ using namespace std;
 #include "VRController.h"
 #include "ModelLoader.h"
 
+#include "HeatParticleShader.h"
+#include "HeatParticleGeometry.h"
+#include "HeatParticleMat.h"
+#include "HeatParticleSystem.h"
+#include "BlendShader.h"
+
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -125,6 +131,15 @@ void WindowManager::mainLoop() {
 	unsigned int TEX_HEIGHT = 800;
 	vrDisplay->GetRecommendedRenderTargetSize(&TEX_WIDTH, &TEX_HEIGHT);
 
+	ivec2 icoords[6] = {
+		ivec2(TEX_WIDTH, 0),
+		ivec2(0, 0),
+		ivec2(0, TEX_HEIGHT),
+		//Second triangle
+		ivec2(0, TEX_HEIGHT),
+		ivec2(TEX_WIDTH, TEX_HEIGHT),
+		ivec2(TEX_WIDTH, 0)
+	};
 
 	Framebuffer fbLeftEyeDraw = createNewFramebuffer(TEX_WIDTH, TEX_HEIGHT);
 	Framebuffer fbRightEyeDraw = createNewFramebuffer(TEX_WIDTH, TEX_HEIGHT);
@@ -197,21 +212,65 @@ void WindowManager::mainLoop() {
 	Drawable rightSquare(
 		new TextureMat(fbRightEyeRead.getTexture(GL_COLOR_ATTACHMENT0)),
 		new SimpleTexGeometry(points, coords, 6, GL_TRIANGLES));
-
+	
 	SimpleTexShader texShader;
-	SimpleShader shader;
 	TorranceSparrowShader tsShader;
 	TorranceSparrowShader tsTexShader({{ GL_FRAGMENT_SHADER, "#define USING_TEXTURE\n" }
 	});
+	HeatParticleShader thrusterShader;
+	BlendShader blendShader(NUM_SAMPLES);
 
-	TrackballCamera savedCam = cam;
+	Disk particleSpawner(0.05f, vec3(0.f, 0.f, 0.f), vec3(0.f, 1.f, 0.f));
+	HeatParticleSystem pSystem;
+	HeatParticleGeometry pGeometry;
+	HeatParticleMat pMat(0.07f);
+	Drawable blenderLeft(
+		new TextureMat(fbLeftEyeDraw.getTexture(GL_COLOR_ATTACHMENT0)),
+		new SimpleTexGeometry(points, icoords, 6, GL_TRIANGLES));
+	blenderLeft.addMaterial(
+		new TextureMat(fbLeftEyeDraw.getTexture(GL_COLOR_ATTACHMENT1), 
+			TextureMat::TRANSLUCENT));
+
+	Drawable blenderRight(
+		new TextureMat(fbRightEyeDraw.getTexture(GL_COLOR_ATTACHMENT0)),
+		new SimpleTexGeometry(points, icoords, 6, GL_TRIANGLES));
+	blenderRight.addMaterial(
+		new TextureMat(fbRightEyeDraw.getTexture(GL_COLOR_ATTACHMENT1),
+			TextureMat::TRANSLUCENT));
+
+	Drawable pDrawable(&pMat, &pGeometry);
+
+	float initialVelocity = 5.0f;
+	float lifespan = 0.2f;
+	float heat = 0.1f;
+	float divergenceAngle = PI / 8.f;
+	const int particlesPerStep = 250;
+
+	for (int i = 0; i < 500; i++) {
+		pSystem.addParticleFromDisk(particleSpawner, initialVelocity,
+			heat, lifespan, divergenceAngle);
+	}
+
+	float timeElapsed = 0.f;
+
+	float thrust = 1.f;
+
+
+	ElementGeometry dragonGeom = objToElementGeometry("models/dragon.obj");
+	Drawable dragon(
+		new ColorMat(vec3(0.75f, 0.1f, 0.3f)),
+		&dragonGeom);
+	dragon.addMaterial(new ShadedMat(0.2f, 0.5f, 0.3f, 10.f));
+
+	dragon.setPosition(vec3(0.f, 0, 0));
+	dragon.setOrientation(angleAxis(-PI*0.5f, vec3(0.f, 1.f, 0.f)));
 
 	vec3 lightPos(-100.f, 100.f, 100.f);
 
 	fbWindow.use();
 
 	vector<Drawable> drawables;
-	loadWavefront("untrackedmodels/OrganodronCity/", "OrganodronCity", &drawables, &tm);
+//	loadWavefront("untrackedmodels/OrganodronCity/", "OrganodronCity", &drawables, &tm);
 //	loadWavefront("untrackedmodels/SciFiCenter/CenterCity/", "scificity", &drawables, &tm);
 
 	for (int i = 0; i < drawables.size(); i++) {
@@ -220,8 +279,6 @@ void WindowManager::mainLoop() {
 	}
 	
 	vector<vec3> controllerPositions(controllers.size());
-
-	quat perFrameRot = angleAxis(3.14159f / 90.f, vec3(0, 1, 0));
 
 	//Velocity
 	vec3 linearVelocity(0.f);
@@ -315,18 +372,35 @@ void WindowManager::mainLoop() {
 			
 		}
 
-//		lightPos = 0.5f*vrCam.leftEye.getPosition() + 
-//			0.5f*vrCam.rightEye.getPosition();
+		////////////////////
+		//	PARTICLE SIMULATION
+		////////////////////
+		float currentTime = glfwGetTime();
+		float timeOffset = 0.f;
+		for (int i = 0; i<int((0.f + 2.f*thrust)*float(particlesPerStep) / 2.f); i++) {
+			float newHeat = heat*(float(rand()) / float(RAND_MAX))*(0.75f + thrust / 4.f);
+			pSystem.addParticleFromDisk(particleSpawner, initialVelocity*(0.5f + thrust / 2.f),
+				newHeat, lifespan, divergenceAngle*(1.f - thrust)*2.f, timeOffset);
+			timeOffset += (currentTime - timeElapsed) / float(particlesPerStep);
+		}
 
+		pSystem.runSimulation((currentTime - timeElapsed)*0.5f);
+
+		pGeometry.loadParticles(pSystem.particles.data(), pSystem.particles.size());
+
+		timeElapsed = currentTime;
+
+		////////////////////
+		//	DRAW
+		////////////////////
 		glEnable(GL_MULTISAMPLE);
-		glClearColor(0.f, 0.f, 0.f, 1.f);
-
-		dragon.setPosition(0.5f*vrCam.leftEye.getPosition()
-			+ 0.5f*vrCam.rightEye.getPosition()
-			+ vec3(0, 2, 0));
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
+		glClearColor(0.f, 0.f, 0.f, 0.f);
 
 		//Draw left eye
 		fbLeftEyeDraw.use();
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);	//Draw opaque
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		tsShader.draw(vrCam.leftEye, lightPos, dragon);
 		for (int i = 0; i < controllers.size(); i++)
@@ -339,9 +413,16 @@ void WindowManager::mainLoop() {
 			else
 				tsShader.draw(vrCam.leftEye, lightPos, drawables[i]);
 		}
+		glDrawBuffer(GL_COLOR_ATTACHMENT1);	//Draw translucent
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glDepthMask(GL_FALSE);
+		thrusterShader.draw(vrCam.leftEye, pDrawable);
 
 		//Draw right eye
 		fbRightEyeDraw.use();
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);	//Draw opaque
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		tsShader.draw(vrCam.rightEye, lightPos, dragon);
 		for (int i = 0; i < controllers.size(); i++)
@@ -353,9 +434,23 @@ void WindowManager::mainLoop() {
 			else
 				tsShader.draw(vrCam.rightEye, lightPos, drawables[i]);
 		}
+		glDrawBuffer(GL_COLOR_ATTACHMENT1);	//Draw translucent
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glDepthMask(GL_FALSE);
+		thrusterShader.draw(vrCam.rightEye, pDrawable);
 
-		blit(fbLeftEyeDraw, fbLeftEyeRead);
-		blit(fbRightEyeDraw, fbRightEyeRead);
+		//Composite together into read buffers
+		//blit(fbLeftEyeDraw, fbLeftEyeRead);
+		//blit(fbRightEyeDraw, fbRightEyeRead);
+		glDisable(GL_BLEND);
+		fbLeftEyeRead.use();
+		glClear(GL_COLOR_BUFFER_BIT);
+		blendShader.draw(blenderLeft);
+		fbRightEyeRead.use();
+		glClear(GL_COLOR_BUFFER_BIT);
+		blendShader.draw(blenderRight);
 
 		glDisable(GL_MULTISAMPLE);
 
@@ -389,12 +484,6 @@ void WindowManager::mainLoop() {
 
 	delete leftSquare.getMaterial(TextureMat::id);
 	delete leftSquare.getGeometryPtr();
-
-	delete dragon.getMaterial(ColorMat::id);
-	delete dragon.getMaterial(ShadedMat::id);
-	
-	delete sphere.getMaterial(ColorMat::id);
-	delete sphere.getMaterial(ShadedMat::id);
 
 	fbLeftEyeDraw.deleteFramebuffer();
 	fbLeftEyeDraw.deleteTextures();
