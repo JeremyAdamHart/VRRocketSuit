@@ -5,13 +5,17 @@
 #define PI 3.14159265359f
 
 const float DAMPING = 0.001f;
-const float HEAT_DECAY = 10.f;
+const float HEAT_DECAY = 40.f;
 
 using namespace glm;
 using namespace renderlib;
 
 float rand01() {
 	return float(rand()) / float(RAND_MAX);
+}
+
+Disk::Disk() :radius(0.f), origin(vec3(0.f)), normal(vec3(0.f, 1.f, 0.f)) {
+
 }
 
 Disk::Disk(float radius, vec3 origin, vec3 normal) :
@@ -42,7 +46,7 @@ void HeatParticleSystem::addParticleFromDisk(Disk disk, float velocity, float he
 
 	float r = rand01()*disk.radius;
 	float theta = rand01()*2.f*PI;
-	vec3 position = disk.v1*sqrt(r)*cos(theta) + disk.v2*sqrt(r)*sin(theta);
+	vec3 position = disk.v1*sqrt(r)*cos(theta) + disk.v2*sqrt(r)*sin(theta) + disk.origin;
 	HeatParticle newParticle;
 	if (maxDivergenceAngle < 0.0001f) {
 		newParticle = HeatParticle(position, velocity*disk.normal, heat);

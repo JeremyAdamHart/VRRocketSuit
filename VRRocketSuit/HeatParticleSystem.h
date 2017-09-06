@@ -8,6 +8,7 @@
 const int MAX_PARTICLES = 100000;
 
 struct Disk {
+	Disk();
 	Disk(float radius, glm::vec3 origin, glm::vec3 normal);
 
 	float radius;

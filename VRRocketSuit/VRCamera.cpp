@@ -1,9 +1,11 @@
 #include "VRCamera.h"
 #include "VRTools.h"
+#include <glmSupport.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace glm;
+using namespace renderlib;
 
 VRCamera::VRCamera(): camMatrix(1.f){}
 
@@ -13,6 +15,16 @@ void VRCamera::setCameraMatrix(mat4 newCamMatrix) {
 
 mat4 VRCamera::getCameraMatrix() const {
 	return camMatrix;
+}
+
+glm::mat4 VRCamera::getRotationMatrix() const {
+	vec4 origin(0, 0, 0, 1);
+	vec4 translatedOrigin = camMatrix*origin;
+	mat4 tMatrix = translateMatrix(
+		-vec3(translatedOrigin.x, translatedOrigin.y, translatedOrigin.z));
+
+	return inverse(tMatrix*camMatrix);
+
 }
 
 vec3 VRCamera::getPosition() const {

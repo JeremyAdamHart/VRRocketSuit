@@ -131,14 +131,14 @@ void WindowManager::mainLoop() {
 	unsigned int TEX_HEIGHT = 800;
 	vrDisplay->GetRecommendedRenderTargetSize(&TEX_WIDTH, &TEX_HEIGHT);
 
-	ivec2 icoords[6] = {
-		ivec2(TEX_WIDTH, 0),
-		ivec2(0, 0),
-		ivec2(0, TEX_HEIGHT),
+	vec2 icoords[6] = {
+		vec2(0, TEX_HEIGHT),
+		vec2(TEX_WIDTH, TEX_HEIGHT),
+		vec2(TEX_WIDTH, 0),
 		//Second triangle
-		ivec2(0, TEX_HEIGHT),
-		ivec2(TEX_WIDTH, TEX_HEIGHT),
-		ivec2(TEX_WIDTH, 0)
+		vec2(TEX_WIDTH, 0),
+		vec2(0, 0),
+		vec2(0, TEX_HEIGHT)
 	};
 
 	Framebuffer fbLeftEyeDraw = createNewFramebuffer(TEX_WIDTH, TEX_HEIGHT);
@@ -147,7 +147,7 @@ void WindowManager::mainLoop() {
 	Framebuffer fbRightEyeRead = createNewFramebuffer(TEX_WIDTH, TEX_HEIGHT);
 
 
-	const int NUM_SAMPLES = 16;
+	const int NUM_SAMPLES = 4;
 
 	if (!fbLeftEyeDraw.addTexture(
 		createTexture2DMulti(TEX_WIDTH, TEX_HEIGHT, &tm, NUM_SAMPLES),
@@ -163,7 +163,7 @@ void WindowManager::mainLoop() {
 	if (!fbRightEyeDraw.addTexture(
 		createTexture2DMulti(TEX_WIDTH, TEX_HEIGHT, &tm, NUM_SAMPLES),
 		GL_COLOR_ATTACHMENT0) || 
-		!fbLeftEyeDraw.addTexture(
+		!fbRightEyeDraw.addTexture(
 			createTexture2DMulti(TEX_WIDTH, TEX_HEIGHT, &tm, NUM_SAMPLES),
 			GL_COLOR_ATTACHMENT1) ||
 		!fbRightEyeDraw.addTexture(
@@ -220,10 +220,13 @@ void WindowManager::mainLoop() {
 	HeatParticleShader thrusterShader;
 	BlendShader blendShader(NUM_SAMPLES);
 
-	Disk particleSpawner(0.05f, vec3(0.f, 0.f, 0.f), vec3(0.f, 1.f, 0.f));
+	Disk particleSpawners[2];
+	for (int i = 0; i < 2; i++) {
+		particleSpawners[i] = Disk(0.0125f, vec3(0.f, 0.f, -2.f), vec3(0.f, 1.f, 0.f));
+	}
 	HeatParticleSystem pSystem;
 	HeatParticleGeometry pGeometry;
-	HeatParticleMat pMat(0.07f);
+	HeatParticleMat pMat(0.07);
 	Drawable blenderLeft(
 		new TextureMat(fbLeftEyeDraw.getTexture(GL_COLOR_ATTACHMENT0)),
 		new SimpleTexGeometry(points, icoords, 6, GL_TRIANGLES));
@@ -240,37 +243,36 @@ void WindowManager::mainLoop() {
 
 	Drawable pDrawable(&pMat, &pGeometry);
 
-	float initialVelocity = 5.0f;
-	float lifespan = 0.2f;
+	float initialVelocity = 8.0f;
+	float lifespan = 0.1f;
 	float heat = 0.1f;
 	float divergenceAngle = PI / 8.f;
 	const int particlesPerStep = 250;
 
 	for (int i = 0; i < 500; i++) {
-		pSystem.addParticleFromDisk(particleSpawner, initialVelocity,
+		pSystem.addParticleFromDisk(particleSpawners[i%2], initialVelocity,
 			heat, lifespan, divergenceAngle);
 	}
 
 	float timeElapsed = 0.f;
 
-	float thrust = 1.f;
+	float thrust[2];
 
-
-	ElementGeometry dragonGeom = objToElementGeometry("models/dragon.obj");
+	/*ElementGeometry dragonGeom = objToElementGeometry("models/dragon.obj");
 	Drawable dragon(
 		new ColorMat(vec3(0.75f, 0.1f, 0.3f)),
 		&dragonGeom);
 	dragon.addMaterial(new ShadedMat(0.2f, 0.5f, 0.3f, 10.f));
 
-	dragon.setPosition(vec3(0.f, 0, 0));
-	dragon.setOrientation(angleAxis(-PI*0.5f, vec3(0.f, 1.f, 0.f)));
+	dragon.setPosition(vec3(0.f, 0, -1.f));
+	dragon.setOrientation(angleAxis(-PI*0.5f, vec3(0.f, 1.f, 0.f)));*/
 
 	vec3 lightPos(-100.f, 100.f, 100.f);
 
 	fbWindow.use();
 
 	vector<Drawable> drawables;
-//	loadWavefront("untrackedmodels/OrganodronCity/", "OrganodronCity", &drawables, &tm);
+	loadWavefront("untrackedmodels/OrganodronCity/", "OrganodronCity", &drawables, &tm);
 //	loadWavefront("untrackedmodels/SciFiCenter/CenterCity/", "scificity", &drawables, &tm);
 
 	for (int i = 0; i < drawables.size(); i++) {
@@ -321,7 +323,7 @@ void WindowManager::mainLoop() {
 		
 		bool updatePositions = true;
 
-		switch (triggersPressed.size()) {
+		/*switch (triggersPressed.size()) {
 		case 1:
 		{
 			vec3 lastPos = controllerPositions[triggersPressed[0]];
@@ -370,18 +372,29 @@ void WindowManager::mainLoop() {
 			drawables[i].setOrientation(normalize(orientationTransform*orientation));
 			drawables[i].setPosition(drawables[i].getPos() + positionTransform);
 			
-		}
+		}*/
 
 		////////////////////
 		//	PARTICLE SIMULATION
 		////////////////////
 		float currentTime = glfwGetTime();
-		float timeOffset = 0.f;
-		for (int i = 0; i<int((0.f + 2.f*thrust)*float(particlesPerStep) / 2.f); i++) {
-			float newHeat = heat*(float(rand()) / float(RAND_MAX))*(0.75f + thrust / 4.f);
-			pSystem.addParticleFromDisk(particleSpawner, initialVelocity*(0.5f + thrust / 2.f),
-				newHeat, lifespan, divergenceAngle*(1.f - thrust)*2.f, timeOffset);
-			timeOffset += (currentTime - timeElapsed) / float(particlesPerStep);
+		float dt = currentTime - timeElapsed;
+
+		for (int j = 0; j < 2; j++) {
+			thrust[j] = controllers[j].axes[VRController::TRIGGER].x;
+			vec4 newDiskPosition = controllers[j].getTransform()*vec4(0, 0, 0, 1);
+			vec4 newDiskNormal = controllers[j].getTransform()*vec4(0, -1, 0, 0);
+			particleSpawners[j].origin = vec3(newDiskPosition.x, newDiskPosition.y, newDiskPosition.z);
+			particleSpawners[j].normal = vec3(newDiskNormal.x, newDiskNormal.y, newDiskNormal.z);
+			particleSpawners[j].generatePerpendicular();
+
+			float timeOffset = 0.f;
+			for (int i = 0; i<int((0.f + 2.f*thrust[j])*float(particlesPerStep) / 2.f); i++) {
+				float newHeat = heat*(float(rand()) / float(RAND_MAX))*(0.75f + thrust[j] / 4.f);
+				pSystem.addParticleFromDisk(particleSpawners[j], initialVelocity*(0.5f + thrust[j] / 2.f),
+					newHeat, lifespan, divergenceAngle*(1.f - thrust[j])*2.f, timeOffset);
+				timeOffset += (dt) / float(particlesPerStep);
+			}
 		}
 
 		pSystem.runSimulation((currentTime - timeElapsed)*0.5f);
@@ -389,6 +402,31 @@ void WindowManager::mainLoop() {
 		pGeometry.loadParticles(pSystem.particles.data(), pSystem.particles.size());
 
 		timeElapsed = currentTime;
+
+		////////////////////
+		//	APPLY THRUST
+		///////////////////
+		static bool gravityOn = false;
+
+		vec3 linearAcceleration;
+		float maxAcceleration = 8.f;
+
+		if (thrust[0] + thrust[1] > 0.0001f)
+			gravityOn = true;
+
+		float DAMPING = 0.3f;
+		vec3 GRAVITY = (gravityOn) ? vec3(0.f, 9.81f, 0.f): vec3(0.f, 0.f, 0.f);
+
+		vec3 acceleration(0.f);
+		acceleration += thrust[0] * particleSpawners[0].normal*maxAcceleration;
+		acceleration += thrust[1] * particleSpawners[1].normal*maxAcceleration;
+
+		linearVelocity += acceleration*dt - DAMPING*linearVelocity*dt + GRAVITY*dt;
+		vec3 positionOffset = linearVelocity*dt;
+
+		for (int i = 0; i < drawables.size(); i++) {
+			drawables[i].setPosition(drawables[i].getPos() + positionOffset);
+		}
 
 		////////////////////
 		//	DRAW
@@ -402,7 +440,7 @@ void WindowManager::mainLoop() {
 		fbLeftEyeDraw.use();
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);	//Draw opaque
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		tsShader.draw(vrCam.leftEye, lightPos, dragon);
+//		tsShader.draw(vrCam.leftEye, lightPos, dragon);
 		for (int i = 0; i < controllers.size(); i++)
 			tsTexShader.draw(vrCam.leftEye, lightPos, controllers[i]);
 
@@ -414,17 +452,20 @@ void WindowManager::mainLoop() {
 				tsShader.draw(vrCam.leftEye, lightPos, drawables[i]);
 		}
 		glDrawBuffer(GL_COLOR_ATTACHMENT1);	//Draw translucent
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glDepthMask(GL_FALSE);
 		thrusterShader.draw(vrCam.leftEye, pDrawable);
 
 		//Draw right eye
+		glEnable(GL_MULTISAMPLE);
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
 		fbRightEyeDraw.use();
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);	//Draw opaque
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		tsShader.draw(vrCam.rightEye, lightPos, dragon);
+//		tsShader.draw(vrCam.rightEye, lightPos, dragon);
 		for (int i = 0; i < controllers.size(); i++)
 			tsTexShader.draw(vrCam.rightEye, lightPos, controllers[i]);
 		for (int i = 0; i < drawables.size(); i++) {
@@ -435,26 +476,31 @@ void WindowManager::mainLoop() {
 				tsShader.draw(vrCam.rightEye, lightPos, drawables[i]);
 		}
 		glDrawBuffer(GL_COLOR_ATTACHMENT1);	//Draw translucent
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 		glDepthMask(GL_FALSE);
 		thrusterShader.draw(vrCam.rightEye, pDrawable);
 
 		//Composite together into read buffers
-		//blit(fbLeftEyeDraw, fbLeftEyeRead);
-		//blit(fbRightEyeDraw, fbRightEyeRead);
+//		blit(fbLeftEyeDraw, fbLeftEyeRead);
+//		blit(fbRightEyeDraw, fbRightEyeRead);
 		glDisable(GL_BLEND);
 		fbLeftEyeRead.use();
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		blendShader.draw(blenderLeft);
 		fbRightEyeRead.use();
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		blendShader.draw(blenderRight);
 
 		glDisable(GL_MULTISAMPLE);
 
 		//Draw window
+		glEnable(GL_MULTISAMPLE);
+		glDepthMask(GL_TRUE);
+		glDisable(GL_BLEND);
 		fbWindow.use();
 		leftEyeView.use();
 		glClearColor(1.0, 1.0, 1.0, 1.0);

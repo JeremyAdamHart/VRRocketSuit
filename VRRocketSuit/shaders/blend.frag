@@ -4,33 +4,35 @@
 out vec4 FragmentColour;
 
 #ifdef NUM_SAMPLES
-sampler2DMS opaqueTexture;
-sampler2DMS translucentTexture;
+uniform sampler2DMS opaqueTexture;
+uniform sampler2DMS translucentTexture;
 #else
-sampler2D opaqueTexture;
-sampler2D translucentTexture;
+uniform sampler2D opaqueTexture;
+uniform sampler2D translucentTexture;
 #endif
 
-ivec3 FragmentCoord;
+in vec2 FragmentTexCoord;
 
 void main()
 {
+
+	ivec2 texCoord = ivec2(int(FragmentTexCoord.x), int(FragmentTexCoord.y));
 	vec4 opaqueColour = vec4(0.0);
 	vec4 translucentColour = vec4(0.0);
 	#ifdef NUM_SAMPLES
 	for(int i=0; i<NUM_SAMPLES; i++){
-		opaqueColour += texelFetch(opaqueTexture, FragmentCoord, i);
+		opaqueColour += texelFetch(opaqueTexture, texCoord, i);
 	}
 	opaqueColour /= NUM_SAMPLES;
 	for(int i=0; i<NUM_SAMPLES; i++){
-		translucentColour += texelFetch(translucentTexture, FragmentCoord, i);
+		translucentColour += texelFetch(translucentTexture, texCoord, i);
 	}
 	translucentColour /= NUM_SAMPLES;
 	#else
-	opaqueColour = texelFetch(opaqueTexture, FragmentCoord);
-	translucentColour = texelFetch(translucentTexture, FragmentCoord);
+	opaqueColour = texelFetch(opaqueTexture, texCoord);
+	translucentColour = texelFetch(translucentTexture, texCoord);
 	#endif
 
-	float alpha = min(translucentColour.a, 1);
+	float alpha = min(length(translucentColour), 1);
 	FragmentColour = (1.0-alpha)*opaqueColour + alpha*translucentColour; 
 }

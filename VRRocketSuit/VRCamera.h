@@ -15,6 +15,7 @@ public:
 
 	virtual glm::mat4 getCameraMatrix() const;
 	virtual glm::vec3 getPosition() const;
+	virtual glm::mat4 getRotationMatrix() const;
 };
 
 class VRCameraController {
