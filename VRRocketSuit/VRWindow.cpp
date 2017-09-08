@@ -277,7 +277,7 @@ void WindowManager::mainLoop() {
 
 	for (int i = 0; i < drawables.size(); i++) {
 		drawables[i].setPosition(vec3(0, 0, -2.f));
-		drawables[i].setScale(vec3(0.1));
+		drawables[i].setScale(vec3(1.f));
 	}
 	
 	vector<vec3> controllerPositions(controllers.size());
@@ -414,8 +414,8 @@ void WindowManager::mainLoop() {
 		if (thrust[0] + thrust[1] > 0.0001f)
 			gravityOn = true;
 
-		float DAMPING = 0.3f;
-		vec3 GRAVITY = (gravityOn) ? vec3(0.f, 9.81f, 0.f): vec3(0.f, 0.f, 0.f);
+		float DAMPING = 0.2f;
+		/*vec3 GRAVITY = (gravityOn) ? vec3(0.f, 9.81f, 0.f): vec3(0.f, 0.f, 0.f);
 
 		vec3 acceleration(0.f);
 		acceleration += thrust[0] * particleSpawners[0].normal*maxAcceleration;
@@ -423,9 +423,53 @@ void WindowManager::mainLoop() {
 
 		linearVelocity += acceleration*dt - DAMPING*linearVelocity*dt + GRAVITY*dt;
 		vec3 positionOffset = linearVelocity*dt;
+		*/
+
+		vec3 centerOfMass = (0.5f*vrCam.leftEye.getPosition() + 
+			0.5f*vrCam.rightEye.getPosition());
+		centerOfMass.y *= 0.6;
+
+		if (gravityOn) {
+
+			vec3 fA = thrust[0] * particleSpawners[0].normal*maxAcceleration;
+			vec3 fB = thrust[1] * particleSpawners[1].normal*maxAcceleration;
+			vec3 locA = particleSpawners[0].origin - centerOfMass;
+			vec3 locB = particleSpawners[1].origin - centerOfMass;
+
+			fA = vrCam.modelToWorld(vec4(fA, 0.f));
+			fB = vrCam.modelToWorld(vec4(fB, 0.f));
+			locA = vrCam.modelToWorld(vec4(locA, 1.f));
+			locB = vrCam.modelToWorld(vec4(locB, 1.f));
+
+			vrCam.addLinearForceOnly(-fA);
+			vrCam.addLinearForceOnly(-fB);
+			vrCam.addTorqueOnly(-fA*1.f, locA);
+			vrCam.addTorqueOnly(-fB*1.f, locB);
+
+			vrCam.addGravityForces();
+			vrCam.addDampingForces(DAMPING);
+
+			//Correct deviation from up vector
+			vec3 worldUp(0.f, 1.f, 0.f);
+			vec3 playerUp = normalize(vrCam.modelToWorld(vec4(0.f, 1.f, 0.f, 0.f)));
+			vec3 rotAxis = cross(playerUp, worldUp);
+			if (length(rotAxis) > 0.00001f)
+				rotAxis = normalize(rotAxis);
+			else
+				rotAxis = vec3(0.f);
+			float correctionWeight = (1.f - dot(playerUp, worldUp))*30.f;
+			vrCam.torque += correctionWeight*rotAxis;
+
+			vrCam.resolveForces(dt);
+		}
+
+		//Update submatrices
+		mat4 subMatrix = inverse(vrCam.getOrientationMat4())*translateMatrix(-vrCam.getPos());	//vrCam.getTransform();
 
 		for (int i = 0; i < drawables.size(); i++) {
-			drawables[i].setPosition(drawables[i].getPos() + positionOffset);
+//			drawables[i].setPosition(drawables[i].getPos() + positionOffset);
+			//drawables[i].setPosition(-vrCam.getPos());
+			//drawables[i].setOrientation(inverse(vrCam.getOrientationQuat()));
 		}
 
 		////////////////////
@@ -445,11 +489,15 @@ void WindowManager::mainLoop() {
 			tsTexShader.draw(vrCam.leftEye, lightPos, controllers[i]);
 
 		for (int i = 0; i < drawables.size(); i++) {
+			vrCam.leftEye.subMatrix = subMatrix;
+			vrCam.rightEye.subMatrix = subMatrix;
 			if (drawables[i].getMaterial(TextureMat::id) != nullptr) {
 				tsTexShader.draw(vrCam.leftEye, lightPos, drawables[i]);
 			}
 			else
 				tsShader.draw(vrCam.leftEye, lightPos, drawables[i]);
+			vrCam.leftEye.subMatrix = mat4(1.f);
+			vrCam.rightEye.subMatrix = mat4(1.f);
 		}
 		glDrawBuffer(GL_COLOR_ATTACHMENT1);	//Draw translucent
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -469,11 +517,15 @@ void WindowManager::mainLoop() {
 		for (int i = 0; i < controllers.size(); i++)
 			tsTexShader.draw(vrCam.rightEye, lightPos, controllers[i]);
 		for (int i = 0; i < drawables.size(); i++) {
+			vrCam.leftEye.subMatrix = subMatrix;
+			vrCam.rightEye.subMatrix = subMatrix;
 			if (drawables[i].getMaterial(TextureMat::id) != nullptr) {
 				tsTexShader.draw(vrCam.rightEye, lightPos, drawables[i]);
 			}
 			else
 				tsShader.draw(vrCam.rightEye, lightPos, drawables[i]);
+			vrCam.leftEye.subMatrix = mat4(1.f);
+			vrCam.rightEye.subMatrix = mat4(1.f);
 		}
 		glDrawBuffer(GL_COLOR_ATTACHMENT1);	//Draw translucent
 		glClear(GL_COLOR_BUFFER_BIT);

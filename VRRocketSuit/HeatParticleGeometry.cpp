@@ -95,9 +95,9 @@ void HeatParticleGeometry::loadParticles(HeatParticle *particles, size_t particl
 	glBufferData(GL_ARRAY_BUFFER, particleNum * sizeof(HeatParticle), 
 		particles, GL_DYNAMIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[VELOCITY]);
+	/*glBindBuffer(GL_ARRAY_BUFFER, vbo[VELOCITY]);
 	glBufferData(GL_ARRAY_BUFFER, particleNum * sizeof(HeatParticle),
-		particles, GL_DYNAMIC_DRAW);
+		particles, GL_DYNAMIC_DRAW);*/
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[HEAT]);
 	glBufferData(GL_ARRAY_BUFFER, particleNum * sizeof(HeatParticle),

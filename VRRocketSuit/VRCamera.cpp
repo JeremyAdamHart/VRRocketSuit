@@ -7,14 +7,14 @@
 using namespace glm;
 using namespace renderlib;
 
-VRCamera::VRCamera(): camMatrix(1.f){}
+VRCamera::VRCamera(): camMatrix(1.f), subMatrix(1.f){}
 
 void VRCamera::setCameraMatrix(mat4 newCamMatrix) {
 	camMatrix = newCamMatrix;
 }
 
 mat4 VRCamera::getCameraMatrix() const {
-	return camMatrix;
+	return camMatrix*subMatrix;
 }
 
 glm::mat4 VRCamera::getRotationMatrix() const {
@@ -34,7 +34,8 @@ vec3 VRCamera::getPosition() const {
 
 VRCameraController::VRCameraController(vr::TrackedDevicePose_t *headsetPose, 
 	vr::IVRSystem *vrDisplay) :
-headsetPose(headsetPose), leftEyeTransform(1.f), rightEyeTransform(1.f)
+	RigidBody(1.f, mat3(1.f)),
+	headsetPose(headsetPose), leftEyeTransform(1.f), rightEyeTransform(1.f)
 {
 	setEyeTransforms(vrDisplay);
 	setProjection(vrDisplay);

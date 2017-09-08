@@ -18,6 +18,7 @@
     <ClCompile Include="HeatParticleSystem.cpp">
       <Filter>HeatParticleSystem</Filter>
     </ClCompile>
+    <ClCompile Include="Physics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VRController.h" />
@@ -36,6 +37,7 @@
     <ClInclude Include="HeatParticleSystem.h">
       <Filter>HeatParticleSystem</Filter>
     </ClInclude>
+    <ClInclude Include="Physics.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

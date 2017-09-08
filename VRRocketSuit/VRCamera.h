@@ -3,12 +3,15 @@
 #include <Camera.h>
 #include <glmSupport.h>
 #include <openvr.h>
+#include "Physics.h"
 
 class VRCamera : public renderlib::Camera {
 
 	glm::mat4 camMatrix;
 
 public:
+	glm::mat4 subMatrix;
+
 	VRCamera();
 
 	void setCameraMatrix(glm::mat4 newCamMatrix);
@@ -18,7 +21,7 @@ public:
 	virtual glm::mat4 getRotationMatrix() const;
 };
 
-class VRCameraController {
+class VRCameraController : public RigidBody{
 	vr::TrackedDevicePose_t *headsetPose;
 	glm::mat4 leftEyeTransform;
 	glm::mat4 rightEyeTransform;
