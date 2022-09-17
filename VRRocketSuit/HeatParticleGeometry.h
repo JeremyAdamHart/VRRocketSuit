@@ -29,5 +29,5 @@ public:
 
 	virtual void bindGeometry() const;
 
-	virtual void drawGeometry() const;
+	virtual void drawGeometry();
 };

@@ -112,7 +112,7 @@ void HeatParticleGeometry::bindGeometry() const {
 	glBindVertexArray(vao);
 }
 
-void HeatParticleGeometry::drawGeometry() const {
+void HeatParticleGeometry::drawGeometry() {
 	bindGeometry();
 
 

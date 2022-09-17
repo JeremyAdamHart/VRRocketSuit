@@ -16,5 +16,5 @@ public:
 
 	virtual bool createProgram(std::map<GLenum, std::string> defines = {});
 
-	void draw(const renderlib::Camera &cam, const renderlib::Drawable &obj);
+	void draw(const renderlib::Camera &cam, renderlib::Drawable &obj);
 };

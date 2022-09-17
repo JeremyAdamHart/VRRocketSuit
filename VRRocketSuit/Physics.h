@@ -28,6 +28,7 @@ public:
 
 	RigidBody(float mass, glm::mat3 inertialTensor);
 
+	//Applied in world space
 	void addLinearForceOnly(glm::vec3 f);
 	void addForce(glm::vec3 f, glm::vec3 loc);
 	void addTorqueOnly(glm::vec3 f, glm::vec3 loc);

@@ -31,16 +31,17 @@ void RigidBody::addTorqueOnly(vec3 f, vec3 loc) {
 void RigidBody::resolveForces(float dt){
 
 	//Linear integration
-	v += (force/mass)*dt;
+	v += (force / mass)*dt;
 	position += v*dt;
 
-	//Rotational integration
+	//Rotational integration - Body space to world space
 	mat3 IinvWorld = mat3_cast(orientation)*Iinv*transpose(mat3_cast(orientation));
-	vec3 ddt_omega = IinvWorld*torque;
-	omega += ddt_omega*dt;
-	quat omegaQ (0, omega.x, omega.y, omega.z);
+	vec3 ddt_omega = torque;		//World space
+	omega += ddt_omega*dt;					//World space
+	vec3 angVelocityV = IinvWorld*omega;	//World space
+	quat angVelocityQ(0, angVelocityV.x, angVelocityV.y, angVelocityV.z);
 
-	orientation += dt*0.5f*omegaQ*orientation;
+	orientation += dt*	0.5f*angVelocityQ*orientation;
 	orientation = normalize(orientation);
 
 	force = vec3(0.0);

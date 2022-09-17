@@ -38,6 +38,7 @@ public:
 		glm::vec4 color = glm::vec4(1.f));
 
 	void mainLoop();
+	void rigidBodyTest();
 };
 
 vr::IVRSystem *initVR();

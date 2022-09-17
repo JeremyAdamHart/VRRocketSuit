@@ -66,5 +66,5 @@ void VRController::updatePose(const vr::TrackedDevicePose_t &pose) {
 
 void VRController::updateState(const vr::VRControllerState_t &state) {
 	axes[TRIGGER] = vec2(state.rAxis[1].x, 0.f);
-	buttons[TRACKPAD] = vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad) && state.ulButtonPressed;
+	buttons[TRACKPAD] = vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Touchpad) & state.ulButtonPressed;
 }
