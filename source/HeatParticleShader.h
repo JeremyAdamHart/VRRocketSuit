@@ -1,8 +1,8 @@
 #pragma once
-#include "Shader.h"
-#include "Drawable.h"
-#include "Camera.h"
-#include "Scene.h"
+#include <jorl/core/Shader.h>
+#include <jorl/core/Drawable.h>
+#include <jorl/core/Camera.h>
+#include <jorl/core/Scene.h>
 #include <vector>
 
 class HeatParticleShader : public renderlib::Shader {

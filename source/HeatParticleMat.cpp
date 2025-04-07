@@ -1,5 +1,5 @@
 #include "HeatParticleMat.h"
-#include "glSupport.h"
+#include <jorl/core/glSupport.h>
 
 using namespace renderlib;
 

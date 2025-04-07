@@ -2,9 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include "glmSupport.h"
-#include "MeshInfoLoader.h"
-#include <Object.h>
+#include <jorl/core/glmSupport.h>
+#include <jorl/core/Object.h>
+#include <jorl/exts/MeshInfoLoader.h>
 
 const float DAMPING_LINEAR = 5000.f;
 const float DAMPING_ANGULAR = 5.f;

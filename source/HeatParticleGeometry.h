@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GLGeometry.h>
+#include <jorl/core/GLGeometry.h>
 #include <glm/glm.hpp>
 
 struct HeatParticle{

@@ -2,9 +2,9 @@
 
 #include <openvr.h>
 #include <glm/glm.hpp>
-#include <ElementGeometry.h>
-#include <Drawable.h>
-#include <Texture.h>
+#include <jorl/core/Drawable.h>
+#include <jorl/core/Texture.h>
+#include <jorl/exts/ElementGeometry.h>
 
 glm::vec3 toVec3(vr::HmdVector3_t vec);
 glm::vec2 toVec2(vr::HmdVector2_t vec);

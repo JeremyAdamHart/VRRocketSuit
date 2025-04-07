@@ -1,6 +1,6 @@
 #include "VRCamera.h"
 #include "VRTools.h"
-#include <glmSupport.h>
+#include <jorl/core/glmSupport.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Camera.h>
-#include <glmSupport.h>
+#include <jorl/core/Camera.h>
+#include <jorl/core/glmSupport.h>
 #include <openvr.h>
 #include "Physics.h"
 

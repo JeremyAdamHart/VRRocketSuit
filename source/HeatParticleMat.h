@@ -1,5 +1,5 @@
 #pragma once
-#include "Material.h"
+#include <jorl/core/Material.h>
 
 class HeatParticleMat : public renderlib::Material {
 public:

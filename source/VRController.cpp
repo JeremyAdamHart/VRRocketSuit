@@ -1,5 +1,5 @@
 #include "VRController.h"
-#include <glmSupport.h>
+#include <jorl/core/glmSupport.h>
 #include "VRTools.h"
 
 using namespace renderlib;

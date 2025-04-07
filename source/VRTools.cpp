@@ -1,7 +1,7 @@
 #include "VRTools.h"
-#include <TextureCreation.h>
-#include <TextureMat.h>
-#include <ShadedMat.h>
+#include <jorl/exts/TextureCreation.h>
+#include <jorl/exts/TextureMat.h>
+#include <jorl/exts/ShadedMat.h>
 
 using namespace renderlib;
 

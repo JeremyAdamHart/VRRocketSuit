@@ -1,0 +1,10 @@
+[requires]
+jorl/0.0.1
+openvr/1.16.8
+glm/1.0.1
+
+[generators]
+CMakeDeps
+CMakeToolchain
+[layout]
+cmake_layout

@@ -5,27 +5,27 @@
 using namespace glm;
 using namespace std;
 
-#include "Drawable.h"
-#include "SimpleGeometry.h"
-#include "SimpleShader.h"
-#include "ColorMat.h"
-#include "TrackballCamera.h"
-#include "SimpleTexManager.h"
-#include "simpleTexShader.h"
-#include "TextureCreation.h"
-#include "TextureMat.h"
-#include "MeshInfoLoader.h"
-#include "ShadedMat.h"
-#include "TorranceSparrowShader.h"
-#include "Framebuffer.h"
-#include "VRController.h"
-#include "ModelLoader.h"
+#include <jorl/core/Drawable.h>
+#include <jorl/exts/SimpleGeometry.h>
+#include <jorl/exts/SimpleShader.h>
+#include <jorl/exts/ColorMat.h>
+#include <jorl/exts/TrackballCamera.h>
+#include <jorl/exts/SimpleTexManager.h>
+#include <jorl/exts/simpleTexShader.h>
+#include <jorl/exts/TextureCreation.h>
+#include <jorl/exts/TextureMat.h>
+#include <jorl/exts/MeshInfoLoader.h>
+#include <jorl/exts/ShadedMat.h>
+#include <jorl/exts/TorranceSparrowShader.h>
+#include <jorl/exts/Framebuffer.h>
+#include <jorl/exts/ModelLoader.h>
+#include <jorl/exts/BlendShader.h>
 
+#include "VRController.h"
 #include "HeatParticleShader.h"
 #include "HeatParticleGeometry.h"
 #include "HeatParticleMat.h"
 #include "HeatParticleSystem.h"
-#include "BlendShader.h"
 
 
 #include <glm/gtc/matrix_transform.hpp>

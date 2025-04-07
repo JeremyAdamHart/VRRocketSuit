@@ -1,8 +1,8 @@
 #pragma once
 
 #include <openvr.h>
-#include <Drawable.h>
-#include <Texture.h>
+#include <jorl/core/Drawable.h>
+#include <jorl/core/Texture.h>
 #include <glm/glm.hpp>
 
 class VRController: public renderlib::Drawable{
