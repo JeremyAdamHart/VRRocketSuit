@@ -6,7 +6,6 @@ using namespace glm;
 using namespace std;
 
 #include <jorl/core/Drawable.h>
-#include <jorl/exts/SimpleGeometry.h>
 #include <jorl/exts/SimpleShader.h>
 #include <jorl/exts/ColorMat.h>
 #include <jorl/exts/TrackballCamera.h>
@@ -16,8 +15,8 @@ using namespace std;
 #include <jorl/exts/TextureMat.h>
 #include <jorl/exts/MeshInfoLoader.h>
 #include <jorl/exts/ShadedMat.h>
-#include <jorl/exts/TorranceSparrowShader.h>
-#include <jorl/exts/Framebuffer.h>
+#include <jorl/exts/BlinnPhongShader.h>
+#include <jorl/core/Framebuffer.h>
 #include <jorl/exts/ModelLoader.h>
 #include <jorl/exts/BlendShader.h>
 
@@ -206,16 +205,17 @@ void WindowManager::mainLoop() {
 
 	//Squares for left and right views
 	Drawable leftSquare(
-		new TextureMat(fbLeftEyeRead.getTexture(GL_COLOR_ATTACHMENT0)),
-		new SimpleTexGeometry(points, coords, 6, GL_TRIANGLES));
+		new TextureGeometry(GL_TRIANGLES, points, coords, 6),
+		new TextureMat(fbLeftEyeRead.getTexture(GL_COLOR_ATTACHMENT0)));
 
 	Drawable rightSquare(
-		new TextureMat(fbRightEyeRead.getTexture(GL_COLOR_ATTACHMENT0)),
-		new SimpleTexGeometry(points, coords, 6, GL_TRIANGLES));
+		new TextureGeometry(GL_TRIANGLES, points, coords, 6),
+		new TextureMat(fbRightEyeRead.getTexture(GL_COLOR_ATTACHMENT0))
+	);
 	
 	SimpleTexShader texShader;
-	TorranceSparrowShader tsShader;
-	TorranceSparrowShader tsTexShader({{ GL_FRAGMENT_SHADER, "#define USING_TEXTURE\n" }
+	BlinnPhongShader tsShader;
+	BlinnPhongShader tsTexShader({{ GL_FRAGMENT_SHADER, "#define USING_TEXTURE\n" }
 	});
 	HeatParticleShader thrusterShader;
 	BlendShader blendShader(NUM_SAMPLES);
@@ -228,20 +228,22 @@ void WindowManager::mainLoop() {
 	HeatParticleGeometry pGeometry;
 	HeatParticleMat pMat(0.07);
 	Drawable blenderLeft(
-		new TextureMat(fbLeftEyeDraw.getTexture(GL_COLOR_ATTACHMENT0)),
-		new SimpleTexGeometry(points, icoords, 6, GL_TRIANGLES));
+		new TextureGeometry(GL_TRIANGLES, points, icoords, 6),
+		new TextureMat(fbLeftEyeDraw.getTexture(GL_COLOR_ATTACHMENT0))
+	);
 	blenderLeft.addMaterial(
 		new TextureMat(fbLeftEyeDraw.getTexture(GL_COLOR_ATTACHMENT1), 
 			TextureMat::TRANSLUCENT));
 
 	Drawable blenderRight(
-		new TextureMat(fbRightEyeDraw.getTexture(GL_COLOR_ATTACHMENT0)),
-		new SimpleTexGeometry(points, icoords, 6, GL_TRIANGLES));
+		new TextureGeometry(GL_TRIANGLES, points, icoords, 6),
+		new TextureMat(fbRightEyeDraw.getTexture(GL_COLOR_ATTACHMENT0))
+	);
 	blenderRight.addMaterial(
 		new TextureMat(fbRightEyeDraw.getTexture(GL_COLOR_ATTACHMENT1),
 			TextureMat::TRANSLUCENT));
 
-	Drawable pDrawable(&pMat, &pGeometry);
+	Drawable pDrawable(&pGeometry, &pMat);
 
 	float initialVelocity = 8.0f;
 	float lifespan = 0.1f;
@@ -564,11 +566,15 @@ void WindowManager::mainLoop() {
 
 		//Draw headset
 		if (vrDisplay) {
+			uint32_t texIds[2] = {
+				static_cast<GLuint>(fbLeftEyeRead.getTexture(GL_COLOR_ATTACHMENT0).getID()),
+				static_cast<GLuint>(fbRightEyeRead.getTexture(GL_COLOR_ATTACHMENT0).getID())
+			};
 			vr::Texture_t leftTexture = { 
-				(void*)(uintptr_t)fbLeftEyeRead.getTexture(GL_COLOR_ATTACHMENT0).getID(), 
+				(void*)(uintptr_t)texIds[0], 
 				vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 			vr::Texture_t rightTexture = {
-				(void*)(uintptr_t)fbRightEyeRead.getTexture(GL_COLOR_ATTACHMENT0).getID(),
+				(void*)(uintptr_t)texIds[1],
 				vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 
 			vr::VRCompositor()->Submit(vr::Eye_Left, &leftTexture);
@@ -580,13 +586,13 @@ void WindowManager::mainLoop() {
 	}
 
 
-	delete leftSquare.getMaterial(TextureMat::id);
-	delete leftSquare.getGeometryPtr();
+	// delete leftSquare.getMaterial(TextureMat::id);
+	// delete leftSquare.getGeometryPtr();
 
-	fbLeftEyeDraw.deleteFramebuffer();
-	fbLeftEyeDraw.deleteTextures();
-	fbRightEyeDraw.deleteFramebuffer();
-	fbRightEyeDraw.deleteTextures();
+	// fbLeftEyeDraw.deleteFramebuffer();
+	// fbLeftEyeDraw.deleteTextures();
+	// fbRightEyeDraw.deleteFramebuffer();
+	// fbRightEyeDraw.deleteTextures();
 
 	glfwTerminate();
 	vr::VR_Shutdown();

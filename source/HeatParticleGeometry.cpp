@@ -21,10 +21,10 @@ bool HeatParticleGeometry::initializeVAO() {
 	glGenBuffers(COUNT, vbo);
 
 	glBindVertexArray(vao);
-	glEnableVertexAttribArray(ATTRIB_LOCATION::POSITION);
+	glEnableVertexAttribArray(QUAD_POSITION);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[QUAD_POSITION]);
 	glVertexAttribPointer(
-		ATTRIB_LOCATION::POSITION,			//Attribute
+		QUAD_POSITION,			//Attribute
 		3,					//# of components
 		GL_FLOAT,			//Type
 		GL_FALSE,			//Normalized?
@@ -42,10 +42,10 @@ bool HeatParticleGeometry::initializeVAO() {
 	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(vec3), quad, GL_STATIC_DRAW);
 
 	//Particle position
-	glEnableVertexAttribArray(ATTRIB_LOCATION::POSITION+PARTICLE_POSITION);
+	glEnableVertexAttribArray(PARTICLE_POSITION);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[PARTICLE_POSITION]);
 	glVertexAttribPointer(
-		ATTRIB_LOCATION::POSITION + PARTICLE_POSITION,			//Attribute
+		PARTICLE_POSITION,			//Attribute
 		3,					//# of components
 		GL_FLOAT,			//Type
 		GL_FALSE,			//Normalized?
@@ -54,10 +54,10 @@ bool HeatParticleGeometry::initializeVAO() {
 	);
 
 	//Particle velocity
-	glEnableVertexAttribArray(ATTRIB_LOCATION::POSITION+VELOCITY);
+	glEnableVertexAttribArray(VELOCITY);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[VELOCITY]);
 	glVertexAttribPointer(
-		ATTRIB_LOCATION::POSITION + VELOCITY,			//Attribute
+		VELOCITY,			//Attribute
 		3,					//# of components
 		GL_FLOAT,			//Type
 		GL_FALSE,			//Normalized?
@@ -66,10 +66,10 @@ bool HeatParticleGeometry::initializeVAO() {
 	);
 	
 	//Particle heat
-	glEnableVertexAttribArray(ATTRIB_LOCATION::POSITION+HEAT);
+	glEnableVertexAttribArray(HEAT);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[HEAT]);
 	glVertexAttribPointer(
-		ATTRIB_LOCATION::POSITION + HEAT,		//Attribute
+		HEAT,		//Attribute
 		1,					//# of components
 		GL_FLOAT,			//Type
 		GL_FALSE,			//Normalized?
@@ -78,9 +78,9 @@ bool HeatParticleGeometry::initializeVAO() {
 	);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glVertexAttribDivisor(ATTRIB_LOCATION::POSITION + PARTICLE_POSITION, 1);
-	glVertexAttribDivisor(ATTRIB_LOCATION::POSITION + VELOCITY, 1);
-	glVertexAttribDivisor(ATTRIB_LOCATION::POSITION + HEAT, 1);	
+	glVertexAttribDivisor(PARTICLE_POSITION, 1);
+	glVertexAttribDivisor(VELOCITY, 1);
+	glVertexAttribDivisor(HEAT, 1);	
 
 	glBindVertexArray(0);
 
